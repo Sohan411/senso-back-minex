@@ -123,6 +123,9 @@ function userByCompanyname(req, res) {
       res.status(500).json({ message: 'Internal server error' });
     }
   }
+
+
+
  
   function fetchCompanyDetails(req, res) {
     const CompanyEmail = req.params.CompanyEmail;
@@ -867,14 +870,16 @@ monitorAndSyncDevices();
                 console.error(`Error deleting old company data for ${companyName}:`, err);
                 return;
               }
-    
+              if(companyName != null){
               connection.query(insertCompanyDataQuery, [companyName, totalUsers, activeUsers, inactiveUsers], (err) => {
                 if (err) {
                   console.error(`Error inserting company data for ${companyName}:`, err);
                 }
               
               });
+            }
             });
+
           });
         });
       });
