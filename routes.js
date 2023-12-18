@@ -29,7 +29,7 @@ router.put('/updatePassword/:UserId', dashboard.updatePassword);
 router.put('/editDeviceTrigger/:deviceId', dashboard.editDeviceTrigger);
 router.get('/device-trigger/:deviceId', dashboard.fetchDeviceTrigger);
 router.get('/user-devices-trigger/:CompanyEmail', dashboard.fetchAllDeviceTrigger);
-router.get('/data/:deviceId/intervals', dashboard.getDataByTimeInterval);
+router.get('/data/:deviceId/:interval', dashboard.getDataByTimeInterval);
 router.get('/data/:deviceId', dashboard.getDataByCustomDate);
 router.get('/dataStatus/:deviceId/intervals', dashboard.getDataByTimeIntervalStatus);
 router.get('/dataStatus/:deviceId', dashboard.getDataByCustomDateStatus);
@@ -53,6 +53,8 @@ router.get('/ConsuptionByIntervalBar/:deviceId', dashboard.getTotalVolumeForDura
 
 router.delete('/delete-device/:deviceUID', dashboard.deleteDevice);
 router.put('/edit-User/:userId', dashboard.editUser);
+router.get('/fetchLatestEntry/:companyEmail', dashboard.fetchLatestEntry);
+
 //SA
 router.get('/fetchAllDevices', SA.fetchAllDevices);
 router.get('/fetchAllUsers', SA.fetchAllUsers);

@@ -270,12 +270,13 @@ function editDeviceTrigger(req, res) {
 function getDataByTimeInterval(req, res) {
   try {
     const deviceId = req.params.deviceId;
-    const timeInterval = req.query.interval;
+    const timeInterval = req.params.interval;
     if (!timeInterval) {
       return res.status(400).json({ message: 'Invalid time interval' });
     }
 
     let duration;
+    let intervalInMinutes;
     switch (timeInterval) {
       case '30sec':
         duration = 'INTERVAL 30 SECOND';
@@ -320,7 +321,7 @@ function getDataByTimeInterval(req, res) {
         return res.status(400).json({ message: 'Invalid time interval' });
     }
 
-    const sql = `SELECT * FROM actual_data WHERE DeviceUID = ? AND TimeStamp >= DATE_SUB(NOW(), ${duration})`;
+    const sql = ` SELECT DATE_FORMAT(TimeStamp, '%Y-%m-%d %H:%i') AS interval_start,AVG(DataValue) AS average_data FROM actual_data WHERE DeviceUID = ? AND TimeStamp >= DATE_SUB(NOW(), INTERVAL 1 ${duration}) GROUP BY UNIX_TIMESTAMP(TimeStamp) DIV (${intervalInMinutes} * 60) ORDER BY interval_start DESC`;
     db.query(sql, [deviceId], (error, results) => {
       if (error) {
         console.error('Error fetching data:', error);
@@ -1238,6 +1239,45 @@ function editUser(req, res) {
   });
 }
 
+function fetchLatestEntry(req, res) {
+  const { companyEmail } = req.params;
+  const fetchUserDevicesQuery = `SELECT * FROM tms_devices WHERE CompanyEmail = ?`;
+  const fetchLatestEntryQuery = `SELECT * FROM actual_data WHERE DeviceUID = ? ORDER BY timestamp DESC LIMIT 1`;
+
+  db.query(fetchUserDevicesQuery, [companyEmail], (fetchUserDevicesError, devices) => {
+    if (fetchUserDevicesError) {
+      return res.status(401).json({ message: 'Error while fetching devices' });
+    }
+
+    if (devices.length === 0) {
+      return res.status(404).json({ message: 'No devices found for the user' });
+    }
+
+    const latestEntry = [];
+
+    devices.forEach((device, index, array) => {
+      const deviceId = device.DeviceUID;
+      db.query(fetchLatestEntryQuery, [deviceId], (fetchLatestEntryError, fetchLatestEntryResult) => {
+        if (fetchLatestEntryError) {
+          return res.status(401).json({ message: 'Error while fetching latest entry' });
+        }
+
+        if (fetchLatestEntryResult.length === 0) {
+          return res.status(404).json({ message: 'No entry found for the device' });
+        }
+
+        latestEntry.push({ [deviceId]: [{ entry: fetchLatestEntryResult }] });
+
+        if (index === array.length - 1) {
+          // This ensures that the response is sent only after all devices are processed
+          res.json({ latestEntry });
+        }
+      });
+    });
+  });
+}
+
+
 module.exports = {
   userDevices,
   editDevice,
@@ -1270,5 +1310,6 @@ module.exports = {
   getTotalVolumeForDuration,
   getWaterConsumptionForDateRange,
   deleteDevice,
-  editUser
+  editUser,
+  fetchLatestEntry,
 };
