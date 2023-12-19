@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev" : "pm2 start app.js"
+    "dev" : "pm2 start app.js",
+    "start" : "node app.js"
   },
   "author": "Kaushal Pohekar",
   "license": "ISC",
