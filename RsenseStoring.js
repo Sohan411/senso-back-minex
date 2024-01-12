@@ -1,52 +1,32 @@
-const SerialPort = require('serialport');
-const mysql = require('mysql2');
+const SerialPort = require('serialport').SerialPort;
+const mysql = require('mysql');
 
-// Create a connection to the MySQL database
-const dbConnection = mysql.createConnection({
+// Create a MySQL connection
+const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '0000',
-  database: 'rsense',
+  database: 'rsense'
 });
 
-// Open the MySQL connection
-dbConnection.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL:', err);
-    return;
-  }
-  console.log('Connected to MySQL database');
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to MySQL');
 });
 
-// Create a new serial port with your COM port configuration
-const port = new SerialPort('COM2', {
-  baudRate: 9600, // Adjust the baud rate as per your device configuration
+// Open the serial port
+const port = new SerialPort('COM3', {
+  baudRate: 9600
 });
 
-// Define the MySQL query to insert data into the table
-const insertQuery = 'INSERT INTO actual_data (flowRate, totalVolume) VALUES (?, ?)';
-
-// Parse incoming data from the COM port and insert it into the MySQL table
 port.on('data', (data) => {
-  // Assuming data is received in a format like: flowRate,totalVolume
+  // Parse the incoming data
   const [flowRate, totalVolume] = data.toString().split(',');
 
-  // Insert the data into the MySQL table
-  dbConnection.query(insertQuery, [flowRate, totalVolume], (err, results) => {
-    if (err) {
-      console.error('Error inserting data into MySQL:', err);
-    } else {
-      console.log('Data inserted into MySQL:', results);
-    }
+  // Insert the data into the MySQL database
+  const sql = `INSERT INTO actual_data (flowRate, totalVolume) VALUES (${flowRate}, ${totalVolume})`;
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    console.log('Data inserted');
   });
-});
-
-// Handle errors from the COM port
-port.on('error', (err) => {
-  console.error('Error reading COM port:', err);
-});
-
-// Close the MySQL connection when the script exits
-process.on('exit', () => {
-  dbConnection.end();
 });
