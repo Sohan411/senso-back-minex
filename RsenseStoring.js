@@ -15,7 +15,7 @@ db.connect((err) => {
 });
 
 // Open the serial port
-const port = new SerialPort('COM3', {
+const port = new SerialPort('COM2', {
   baudRate: 9600
 });
 
