@@ -1,5 +1,6 @@
 const SerialPort = require('serialport').SerialPort;
 const mysql = require('mysql');
+const path = require('path');
 
 // Create a MySQL connection
 const db = mysql.createConnection({
@@ -8,6 +9,12 @@ const db = mysql.createConnection({
   password: '0000',
   database: 'rsense'
 });
+
+SerialPort.list().then(
+  ports => ports.forEach(console.log),
+  err => console.error(err)
+)
+
 
 db.connect((err) => {
   if (err) throw err;
