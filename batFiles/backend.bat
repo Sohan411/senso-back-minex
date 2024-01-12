@@ -2,5 +2,5 @@
 echo Senso Frontend started
 D:
 cd \6 Month Internship\Projects\tms_minex\tms-back
-nodemon app.js
+node app.js
 cmd \k
